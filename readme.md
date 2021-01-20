@@ -80,6 +80,7 @@ actor-system
 
 actor
 - id
+- name
 - inbox (one actor, one inbox constraint) 
 - execution context
 - method: isshutdown or open?
