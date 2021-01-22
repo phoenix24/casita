@@ -1,63 +1,101 @@
 package casita.actor;
 
+import casita.actorsystem.ActorConf;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
 public class TestActorPingPong {
 
-    //public class NotifyActor
-    //public class PingPongStateActor
-
-
-
-    public class MyActor extends BaseActor {
-        private Actor another;
+    public static class PingActor extends BaseActor {
         private long count = 0;
 
-
-        public MyActor(String name) {
-            super(name);
+        public PingActor(ActorSystem system, String name) {
+            super(system, name);
         }
 
         @Override
         public void receiveMessage(Object message) {
-            System.out.println("sleepy-actor: " + this.getName() + " " + count);
+            System.out.println("ping-actor: " + this.getName() + " " + count);
             if (count <= 10) {
                 count += 1;
-                this.another.receive(message);
+                this.send("pong", message);
             } else {
                 System.out.println("10 messages sent; stopping");
             }
         }
+    }
 
-        public void setAnother(Actor another) {
-            this.another = another;
+    public static class PongActor extends BaseActor {
+        private long count = 0;
+
+        public PongActor(ActorSystem system, String name) {
+            super(system, name);
+        }
+
+        @Override
+        public void receiveMessage(Object message) {
+            System.out.println("pong-actor: " + this.getName() + " " + count);
+            if (count <= 10) {
+                count += 1;
+                this.send("ping", message);
+            } else {
+                System.out.println("10 messages sent; stopping");
+            }
         }
     }
 
     @Test
-    public void createPingPongActor() {
+    public void createPingPongActor() throws InterruptedException {
         ActorSystem system = ActorSystem.create("actor-system1");
-        Actor ping = system.createActor(new MyActor("ping"));
-        Actor pong = system.createActor(new MyActor("pong"));
 
-        ((MyActor) ping).setAnother(pong);
-        ((MyActor) pong).setAnother(ping);
+        //ping actor
+        ActorConf confPing = ActorConf.builder()
+                .klass(PingActor.class)
+                .name("ping")
+                .inbox("inmemory")
+                .policy("never")
+                .build();
+        Actor ping = system.createActor(confPing);
 
-        String message = "hello world";
-        ping.receive(message);
+
+        //pong actor
+        ActorConf confPong = ActorConf.builder()
+                .klass(PongActor.class)
+                .name("pong")
+                .inbox("inmemory")
+                .policy("never")
+                .build();
+        Actor pong = system.createActor(confPong);
+
+        // send message to actor
+        ping.receive("hello world");
+        system.send("pong", "here");
     }
 
     @Test
-    public void createPingPongViaQueue() {
+    public void createPingPongViaQueue() throws InterruptedException {
         ActorSystem system = ActorSystem.create("actor-system1");
-        Actor ping = system.createActor(new MyActor("ping"));
-        Actor pong = system.createActor(new MyActor("pong"));
 
-        ((MyActor) ping).setAnother(pong);
-        ((MyActor) pong).setAnother(ping);
+        //ping actor
+        ActorConf confPing = ActorConf.builder()
+                .klass(PingActor.class)
+                .name("ping")
+                .inbox("inmemory")
+                .policy("never")
+                .build();
+        Actor ping = system.createActor(confPing);
 
-        String message = "hello world";
-        system.send(ping, message);
+
+        //pong actor
+        ActorConf confPong = ActorConf.builder()
+                .klass(PongActor.class)
+                .name("pong")
+                .inbox("inmemory")
+                .policy("never")
+                .build();
+        Actor pong = system.createActor(confPong);
+
+        // send message to actor-system
+        system.send(ping, "hello world");
     }
 }

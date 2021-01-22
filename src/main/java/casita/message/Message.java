@@ -1,4 +1,7 @@
 package casita.message;
 
-public interface Message {
+public enum Message {
+    KILL,
+    HELLO,
+    STATUS,
 }

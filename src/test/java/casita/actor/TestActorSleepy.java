@@ -1,19 +1,20 @@
 package casita.actor;
 
+import casita.actorsystem.ActorConf;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
 public class TestActorSleepy {
 
-    public class MyActor extends BaseActor {
-        public MyActor(String name) {
-            super(name);
+    public static class MyActor extends BaseActor {
+        public MyActor(ActorSystem system, String name) {
+            super(system, name);
         }
 
         @Override
         public void receiveMessage(Object message) {
             try {
-                System.out.println(message.toString());
+                System.out.println("sleepy-actor implementation: " + message);
                 Thread.sleep(1000L);
 
             } catch (InterruptedException e) {
@@ -23,12 +24,20 @@ public class TestActorSleepy {
     }
 
     @Test
-    public void createSleepyActor() {
+    public void createSleepyActor() throws InterruptedException {
         ActorSystem system = ActorSystem.create("actor-system1");
-        Actor actor = system.createActor(new MyActor("sleepy"));
+        ActorConf conf = ActorConf.builder()
+                .klass(MyActor.class)
+                .name("sleepy")
+                .inbox("inmemory")
+                .policy("never")
+                .build();
 
+        Actor actor = system.createActor(conf);
         String message = "hello world";
-        system.send(actor, message);
-        system.send(actor, message);
+
+        for (int i = 0; i < 20; i++) {
+            system.send(actor, String.format("%s - %s", message, i));
+        }
     }
 }

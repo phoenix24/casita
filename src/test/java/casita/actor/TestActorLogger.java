@@ -1,38 +1,49 @@
 package casita.actor;
 
+import casita.actorsystem.ActorConf;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
 public class TestActorLogger {
 
-    public class LogActor extends BaseActor {
-        public LogActor(String name) {
-            super(name);
+    public static class LogActor extends BaseActor {
+        public LogActor(ActorSystem system, String name) {
+            super(system, name);
         }
 
         @Override
         public void receiveMessage(Object message) {
-            System.out.println("log-actor implementation: " + message.toString());
+            System.out.println("log-actor implementation: " + message);
         }
     }
 
     @Test
     public void createActorLogger() {
         ActorSystem system = ActorSystem.create("actor-system1");
-        Actor actor = system.createActor(new LogActor("logger"));
+        ActorConf conf = ActorConf.builder()
+                .name("logger")
+                .klass(LogActor.class)
+                .inbox("inmemory")
+                .policy("never")
+                .build();
 
-        String message = "hello world, test message!";
-        actor.receive(message);
+        Actor actor = system.createActor(conf);
+        actor.receive("hello world, test message!");
     }
 
     //todo: write a test for duplicate actors.
 
     @Test
-    public void sendMessageActorLogger() {
+    public void sendMessageActorLogger() throws InterruptedException {
         ActorSystem system = ActorSystem.create("actor-system1");
-        Actor actor = system.createActor(new LogActor("logger"));
+        ActorConf conf = ActorConf.builder()
+                .name("logger")
+                .klass(LogActor.class)
+                .inbox("inmemory")
+                .policy("never")
+                .build();
 
-        String message = "hello world, test message!";
-        system.send(actor, message);
+        Actor actor = system.createActor(conf);
+        system.send(actor, "hello world, test message!");
     }
 }
