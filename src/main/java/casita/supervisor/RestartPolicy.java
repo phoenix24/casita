@@ -1,22 +1,26 @@
 package casita.supervisor;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class RestartPolicy implements Policy {
-    private int count;
+    private AtomicInteger count;
     private final int threshold;
-    private final Object lock = new Object();
 
     public RestartPolicy(int threshold) {
-        this.count = 0;
+        this.count = new AtomicInteger(0);
         this.threshold = threshold;
+    }
+
+    @Override
+    public boolean canExecute() {
+        if (threshold == 0) return true;
+        if (threshold == -1) return false;
+        return this.count.get() < this.threshold;
     }
 
     public boolean shouldRestart() {
         if (threshold == 0) return true;
         if (threshold == -1) return false;
-
-        synchronized (lock) {
-            this.count += 1;
-        }
-        return this.count < this.threshold;
+        return this.count.incrementAndGet() < this.threshold;
     }
 }

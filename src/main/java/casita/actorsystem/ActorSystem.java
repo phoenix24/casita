@@ -1,31 +1,42 @@
 package casita.actorsystem;
 
 import casita.actor.Actor;
-import casita.exceptions.ActorExistsException;
+import casita.exceptions.DuplicateActorException;
+import casita.exceptions.BadActorException;
 import casita.exectution.ExecutionContext;
+import casita.exectution.ThreadPoolContext;
 import casita.inbox.Inbox;
-import casita.message.Message;
+import casita.utils.NetUtils;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import lombok.Getter;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static casita.message.Message.KILL;
+public final class ActorSystem {
 
-public class ActorSystem {
-
+    @Getter
     private final String name;
-    //todo: change to use actor-address instead of actor-name
-    private final Map<String, ActorHolder> actors;
 
-    private final Map<String, ExecutionContext> contexts;
-    private final static ExecutionContext EXEC_DEFAULT = ExecutionContext.create();
+    @Getter
+    private final String hostname;
+
+    private final Map<ActorPath, ActorHolder> actors;
+    private final Map<ActorPath, ExecutionContext> actorContexts;
+    private final Map<String, ExecutionContext> executionContexts;
+    private final static ExecutionContext EXEC_DEFAULT = ThreadPoolContext.create();
 
     private ActorSystem(String name, List<ExecutionContext> contexts) {
         this.name = name;
-        this.actors = new ConcurrentHashMap<>();
-        this.contexts = contexts.stream()
+        this.hostname = NetUtils.getHostAddress();
+
+        this.actors = Maps.newConcurrentMap();
+        this.actorContexts = Maps.newConcurrentMap();
+        this.executionContexts = contexts.stream()
                             .collect(Collectors.toMap(ExecutionContext::getName, ex -> ex));
     }
 
@@ -38,62 +49,64 @@ public class ActorSystem {
     }
 
     public static ActorSystem create(String name) {
-        return create(name, List.of(EXEC_DEFAULT));
+        return create(name, Lists.newArrayList());
     }
 
     public Actor createActor(ActorConf conf) {
         Objects.requireNonNull(conf, "actor conf cannot be null");
 
-        String name = conf.getName();
-        if (this.actors.containsKey(name)) {
-            throw new ActorExistsException("a duplicate actor of same name already exists");
+        ActorPath path = ActorPath.create(conf.getPath());
+        if (this.actors.containsKey(path)) {
+            throw new DuplicateActorException("a duplicate actor of same path already exists");
         }
 
         ActorHolder holder = ActorHolder.create(this, conf);
+        ActorPath actorPath = holder.getActorPath();
+
         ExecutionContext context = conf.getContext() == null
                 ? EXEC_DEFAULT
-                : this.contexts.get(conf.getContext());
+                : this.executionContexts.get(conf.getContext());
 
         context.addInbox(holder);
-        this.actors.put(name, holder);
+        this.actors.put(actorPath, holder);
+        this.actorContexts.put(actorPath, context);
         return holder.getActor();
     }
 
-    public void send(String name, Object message) {
-        ActorHolder holder = this.actors.get(name);
+    public void shutdownActor(final ActorHolder holder) {
+        ActorPath path = holder.getActorPath();
+        synchronized (path) {
+            ExecutionContext context = this.actorContexts.get(path);
+            context.removeInbox(holder);
+            this.actors.remove(path);
+            this.actorContexts.remove(path);
+        }
+    }
+
+    public void send(final ActorPath path, final Object message) {
+        //todo: extend for actor lifecycle message.
+        //todo: extend for remote actor.
+        //todo: this.actors or inbox for remove are not available.
+
+        if (Objects.isNull(path) || !this.actors.containsKey(path)) {
+            throw new BadActorException("invalid actor: bad actor specified");
+        }
+
+        ActorHolder holder = this.actors.get(path);
         Actor actor = holder.getActor();
-        send(actor, message);
-    }
-
-    public void send(Actor actor, Object message) {
         if (Objects.isNull(actor) || !actor.isAlive()) {
-            throw new RuntimeException("actor is already shut or died.");
+            throw new BadActorException("invalid actor: already shut or died");
         }
 
-        String name = actor.getName();
-        if (message instanceof Message) {
-            Message msg = (Message) message;
-            if (msg == KILL) {
-                actorShutdown(name);
-            }
-            System.out.println("ignoring unsupported message: " + message);
-
-        } else {
-            actorMessage(name, message);
-        }
-    }
-
-    private void actorMessage(String name, Object message) {
-        ActorHolder holder = this.actors.get(name);
         Inbox inbox = holder.getInbox();
         inbox.add(message);
     }
 
-    private void actorShutdown(String name) {
-        //todo: additional housekeeping
-        ActorHolder holder = this.actors.get(name);
-        Actor actor = holder.getActor();
-        actor.shutdown();
-        this.actors.remove(name);
+    public void send(Actor actor, Object message) {
+        send(actor.getPath(), message);
+    }
+
+    public void send(String path, Object message) {
+        send(ActorPath.create(path), message);
     }
 }

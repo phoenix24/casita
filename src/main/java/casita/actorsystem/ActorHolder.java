@@ -3,7 +3,6 @@ package casita.actorsystem;
 import casita.actor.Actor;
 import casita.actor.ActorFactory;
 import casita.exceptions.ActorCreationException;
-import casita.exectution.ExecutionContext;
 import casita.inbox.Inbox;
 import casita.inbox.InboxFactory;
 import casita.supervisor.Policy;
@@ -16,17 +15,11 @@ import static java.util.Objects.requireNonNull;
 @Data
 @Builder
 public class ActorHolder {
-    private Actor actor;
     private Inbox inbox;
     private Policy policy;
-    private Address address;
 
-    private ActorHolder(Actor actor, Inbox inbox, Policy policy, Address address) {
-        this.actor = actor;
-        this.inbox = inbox;
-        this.policy = policy;
-        this.address = address;
-    }
+    private Actor actor;
+    private ActorPath actorPath;
 
     public static ActorHolder create(ActorSystem system, ActorConf conf) {
         try {
@@ -34,13 +27,26 @@ public class ActorHolder {
                     .actor(ActorFactory.create(requireNonNull(conf), system))
                     .inbox(InboxFactory.create(requireNonNull(conf.getInbox())))
                     .policy(PolicyFactory.create(requireNonNull(conf.getPolicy())))
-                    .address(Address.create(requireNonNull(conf)))
+                    .actorPath(ActorPath.create(requireNonNull(conf.getPath())))
                     .build();
-
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ActorCreationException("failed to create actor:" + conf.getName());
+            throw new ActorCreationException("failed to create actor:" + conf.getPath());
+        }
+    }
+
+    public void execute(final Object message) {
+        while (this.policy.canExecute()) {
+            try {
+                this.actor.receive(message);
+                return;
+
+            } catch (Exception e) {
+                System.err.println("actor execution exception: " + e.getMessage());
+                boolean restart = this.policy.shouldRestart();
+                System.err.println("actor supervision policy restart? " + restart);
+            }
         }
     }
 }

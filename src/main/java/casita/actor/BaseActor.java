@@ -1,21 +1,19 @@
 package casita.actor;
 
 
+import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
 import casita.exceptions.ActorShutException;
-import lombok.Getter;
 
 
 public abstract class BaseActor implements Actor {
 
-    @Getter
-    private final String name;
-
     private boolean alive;
+    private final ActorPath path;
     private final ActorSystem system;
 
-    public BaseActor(final ActorSystem system, final String name) {
-        this.name = name;
+    public BaseActor(final ActorSystem system, final ActorPath path) {
+        this.path = path;
         this.alive = true;
         this.system = system;
     }
@@ -31,17 +29,27 @@ public abstract class BaseActor implements Actor {
     }
 
     @Override
-    public final void send(String actor, Object message) {
+    public final void send(Actor actor, Object message) {
         system.send(actor, message);
     }
 
     @Override
-    public final void send(Actor actor, Object message) {
+    public final void send(ActorPath actor, Object message) {
+        system.send(actor, message);
+    }
+
+    @Override
+    public final void send(String actor, Object message) {
         system.send(actor, message);
     }
 
     public boolean isAlive() {
         return this.alive;
+    }
+
+    @Override
+    public ActorPath getPath() {
+        return path;
     }
 
     public void shutdown() {

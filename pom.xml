@@ -26,7 +26,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M3</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>
+                        --enable-preview
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

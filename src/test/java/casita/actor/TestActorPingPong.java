@@ -15,7 +15,7 @@ public class TestActorPingPong {
 
         @Override
         public void receiveMessage(Object message) {
-            System.out.println("ping-actor: " + this.getName() + " " + count);
+            System.out.println("ping-actor: " + this.getPath() + " " + count);
             if (count <= 10) {
                 count += 1;
                 this.send("pong", message);
@@ -34,7 +34,7 @@ public class TestActorPingPong {
 
         @Override
         public void receiveMessage(Object message) {
-            System.out.println("pong-actor: " + this.getName() + " " + count);
+            System.out.println("pong-actor: " + this.getPath() + " " + count);
             if (count <= 10) {
                 count += 1;
                 this.send("ping", message);

@@ -13,6 +13,8 @@ public class PolicyFactory {
             case "ONCE" -> new RestartPolicy(1);
             case "TWICE" -> new RestartPolicy(2);
             case "THRICE" -> new RestartPolicy(3);
+            case "FOUR" -> new RestartPolicy(4);
+            case "FIVE" -> new RestartPolicy(5);
 
             default -> throw new RuntimeException("invalid actor policy specified");
         };

@@ -2,7 +2,7 @@ package casita.actor;
 
 import casita.actorsystem.ActorConf;
 import casita.actorsystem.ActorSystem;
-import casita.exectution.ExecutionContext;
+import casita.exectution.ThreadPoolContext;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public class TestActorContexts {
 
         @Override
         public void receiveMessage(Object message) {
-            System.out.println(getName() + "-actor implementation: " + message);
+            System.out.println(this.getPath() + "-actor implementation: " + message);
         }
     }
 
@@ -25,8 +25,8 @@ public class TestActorContexts {
         ActorSystem system = ActorSystem.create(
         "actor-system1",
             List.of(
-                new ExecutionContext("context1"),
-                new ExecutionContext("context2")
+                new ThreadPoolContext("context1"),
+                new ThreadPoolContext("context2")
             )
         );
         ActorConf.ActorConfBuilder builder = ActorConf.builder()
