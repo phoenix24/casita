@@ -1,8 +1,8 @@
 package casita.actorsystem;
 
 import casita.actor.Actor;
-import casita.exceptions.DuplicateActorException;
-import casita.exceptions.BadActorException;
+import casita.exception.DuplicateActorException;
+import casita.exception.BadActorException;
 import casita.exectution.ExecutionContext;
 import casita.exectution.ThreadPoolContext;
 import casita.inbox.Inbox;

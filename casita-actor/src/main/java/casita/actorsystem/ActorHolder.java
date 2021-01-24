@@ -2,7 +2,7 @@ package casita.actorsystem;
 
 import casita.actor.Actor;
 import casita.actor.ActorFactory;
-import casita.exceptions.ActorCreationException;
+import casita.exception.ActorCreationException;
 import casita.inbox.Inbox;
 import casita.inbox.InboxFactory;
 import casita.supervisor.Policy;

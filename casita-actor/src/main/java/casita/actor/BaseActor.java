@@ -3,7 +3,7 @@ package casita.actor;
 
 import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
-import casita.exceptions.ActorShutException;
+import casita.exception.ActorShutException;
 
 
 public abstract class BaseActor implements Actor {

@@ -1,4 +1,4 @@
-package casita.exceptions;
+package casita.exception;
 
 public class ActorCreationException extends RuntimeException {
     public ActorCreationException(String message) {
