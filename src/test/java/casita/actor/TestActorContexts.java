@@ -1,6 +1,7 @@
 package casita.actor;
 
 import casita.actorsystem.ActorConf;
+import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
 import casita.exectution.ThreadPoolContext;
 import org.junit.Test;
@@ -10,8 +11,8 @@ import java.util.List;
 public class TestActorContexts {
 
     public static class MyActor extends BaseActor {
-        public MyActor(ActorSystem system, String name) {
-            super(system, name);
+        public MyActor(ActorSystem system, String path) {
+            super(system, ActorPath.create(path));
         }
 
         @Override
@@ -34,11 +35,11 @@ public class TestActorContexts {
                 .inbox("inmemory")
                 .policy("never");
 
-        Actor actor1 = system.createActor(builder.name("actr1").context("context1").build());
-        Actor actor2 = system.createActor(builder.name("actr2").context("context2").build());
-        Actor actor3 = system.createActor(builder.name("actr3").build());
-        Actor actor4 = system.createActor(builder.name("actr4").build());
-        Actor actor5 = system.createActor(builder.name("actr5").build());
+        Actor actor1 = system.createActor(builder.path("actr1").context("context1").build());
+        Actor actor2 = system.createActor(builder.path("actr2").context("context2").build());
+        Actor actor3 = system.createActor(builder.path("actr3").build());
+        Actor actor4 = system.createActor(builder.path("actr4").build());
+        Actor actor5 = system.createActor(builder.path("actr5").build());
         String message = "hello world";
 
         for (int i = 0; i < 5; i++) {

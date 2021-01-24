@@ -1,6 +1,7 @@
 package casita.actor;
 
 import casita.actorsystem.ActorConf;
+import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
@@ -9,8 +10,8 @@ public class TestActorPingPong {
     public static class PingActor extends BaseActor {
         private long count = 0;
 
-        public PingActor(ActorSystem system, String name) {
-            super(system, name);
+        public PingActor(ActorSystem system, String path) {
+            super(system, ActorPath.create(path));
         }
 
         @Override
@@ -28,8 +29,8 @@ public class TestActorPingPong {
     public static class PongActor extends BaseActor {
         private long count = 0;
 
-        public PongActor(ActorSystem system, String name) {
-            super(system, name);
+        public PongActor(ActorSystem system, String path) {
+            super(system, ActorPath.create(path));
         }
 
         @Override
@@ -51,7 +52,7 @@ public class TestActorPingPong {
         //ping actor
         ActorConf confPing = ActorConf.builder()
                 .klass(PingActor.class)
-                .name("ping")
+                .path("ping")
                 .inbox("inmemory")
                 .policy("never")
                 .build();
@@ -61,7 +62,7 @@ public class TestActorPingPong {
         //pong actor
         ActorConf confPong = ActorConf.builder()
                 .klass(PongActor.class)
-                .name("pong")
+                .path("pong")
                 .inbox("inmemory")
                 .policy("never")
                 .build();
@@ -79,7 +80,7 @@ public class TestActorPingPong {
         //ping actor
         ActorConf confPing = ActorConf.builder()
                 .klass(PingActor.class)
-                .name("ping")
+                .path("ping")
                 .inbox("inmemory")
                 .policy("never")
                 .build();
@@ -89,7 +90,7 @@ public class TestActorPingPong {
         //pong actor
         ActorConf confPong = ActorConf.builder()
                 .klass(PongActor.class)
-                .name("pong")
+                .path("pong")
                 .inbox("inmemory")
                 .policy("never")
                 .build();

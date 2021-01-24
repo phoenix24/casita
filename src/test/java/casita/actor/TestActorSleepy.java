@@ -1,14 +1,15 @@
 package casita.actor;
 
 import casita.actorsystem.ActorConf;
+import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
 public class TestActorSleepy {
 
     public static class MyActor extends BaseActor {
-        public MyActor(ActorSystem system, String name) {
-            super(system, name);
+        public MyActor(ActorSystem system, String path) {
+            super(system, ActorPath.create(path));
         }
 
         @Override
@@ -28,7 +29,7 @@ public class TestActorSleepy {
         ActorSystem system = ActorSystem.create("actor-system1");
         ActorConf conf = ActorConf.builder()
                 .klass(MyActor.class)
-                .name("sleepy")
+                .path("sleepy")
                 .inbox("inmemory")
                 .policy("never")
                 .build();

@@ -1,14 +1,15 @@
 package casita.actor;
 
 import casita.actorsystem.ActorConf;
+import casita.actorsystem.ActorPath;
 import casita.actorsystem.ActorSystem;
 import org.junit.Test;
 
 public class TestActorLogger {
 
     public static class LogActor extends BaseActor {
-        public LogActor(ActorSystem system, String name) {
-            super(system, name);
+        public LogActor(ActorSystem system, String path) {
+            super(system, ActorPath.create(path));
         }
 
         @Override
@@ -21,7 +22,7 @@ public class TestActorLogger {
     public void createActorLogger() {
         ActorSystem system = ActorSystem.create("actor-system1");
         ActorConf conf = ActorConf.builder()
-                .name("logger")
+                .path("logger")
                 .klass(LogActor.class)
                 .inbox("inmemory")
                 .policy("never")
@@ -37,7 +38,7 @@ public class TestActorLogger {
     public void sendMessageActorLogger() throws InterruptedException {
         ActorSystem system = ActorSystem.create("actor-system1");
         ActorConf conf = ActorConf.builder()
-                .name("logger")
+                .path("logger")
                 .klass(LogActor.class)
                 .inbox("inmemory")
                 .policy("never")
